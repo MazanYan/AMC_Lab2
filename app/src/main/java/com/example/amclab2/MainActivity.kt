@@ -11,7 +11,7 @@ import java.io.*
 class MainActivity : AppCompatActivity() {
 
     var arrays: Array<Array<Double>> = Array(1,{_->Array(1, {_-> 0.0})})
-    var generateState: Int = 0
+//    var generateState: Int = 0
 
 
 
@@ -24,22 +24,22 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    /**
-     * state == 0 -> generates array
-     * state == 1 -> sorts array
-     */
-    fun switchButtonState(view: View) {
-        if (generateState.equals(0)) {
-            generateState = 1
-            button.text = "Відсортувати масиви"
-            button.setOnClickListener { v -> generateSortedArr(v) }
-        }
-        else {
-            generateState = 0
-            button.text = "Згенерувати масиви"
-            button.setOnClickListener { v -> generateArrOnClick(v) }
-        }
-    }
+//    /**
+//     * state == 0 -> generates array
+//     * state == 1 -> sorts array
+//     */
+//    fun switchButtonState(view: View) {
+//        if (generateState.equals(0)) {
+//            generateState = 1
+//            button.text = "Відсортувати масиви"
+//            button.setOnClickListener { v -> generateSortedArr(v) }
+//        }
+//        else {
+//            generateState = 0
+//            button.text = "Згенерувати масиви"
+//            button.setOnClickListener { v -> generateArrOnClick(v) }
+//        }
+//    }
 
 
 
@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
 
     fun generateFromFile(view: View) {
-        val filename: String = "AMC_Lab2.txt"
+        val filename: String = "/data/user/0/com.example.amclab2/files/AMC_Lab2.txt"
 
         try {
             // открываем поток для чтения
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
         val generated: Array<Array<Double>> = generateArr()
         this.arrays = generated
         showOnCanvas(view,parseForTextView(arrays))
-        switchButtonState(view)
+//        switchButtonState(view)
     }
 
 
@@ -130,6 +130,7 @@ class MainActivity : AppCompatActivity() {
 
     fun showOnCanvas(view: View, text: String) {
         textView.text = text
+//        textView.height = 300
         val params: ViewGroup.LayoutParams = textView.getLayoutParams()
         params.height = 300
         textView.setLayoutParams(params)
