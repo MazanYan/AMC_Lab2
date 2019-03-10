@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_main.*
 import android.view.View;
+import android.widget.TextView
 import android.widget.Toast
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.DataPoint
@@ -14,6 +15,8 @@ import com.jjoe64.graphview.series.LineGraphSeries
 import com.jjoe64.graphview.series.PointsGraphSeries
 import java.io.*
 import java.lang.Exception
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 
 /**
@@ -25,11 +28,12 @@ class MainActivity : AppCompatActivity() {
     /*
      * class data
      */
-    var arrays: Array<Array<Double>> = Array(1,{_->Array(1, {_-> 0.0})})
+    val nullArray = Array(1,{_->Array(1, {_-> 0.0})})
+    var arrays: Array<Array<Double>> = nullArray
     var plotVals: MutableMap<Int, Double> = mutableMapOf()
     var filePath: String? = null
     val fileName: String = "AMC_Lab2.txt"
-    val baseFile: String = """
+    val baseFileContent: String = """
 -13.4 4 -10 0
 1 2 3 -8 5
 2 14 -13 26 145.5 16.04
@@ -104,11 +108,12 @@ class MainActivity : AppCompatActivity() {
             graph.getViewport().setXAxisBoundsManual(true);
             graph.getViewport().setMaxX(squarePlotData.last().x+100)
             series.setShape(PointsGraphSeries.Shape.RECTANGLE)
-            series.setSize(5.0f)
+            series.setSize(3.5f)
             series.setColor(Color.rgb(215,0,36))
-            graph.addSeries(series)
             interpolatedPlot.setColor(Color.BLUE)
+
             graph.addSeries(interpolatedPlot)
+            graph.addSeries(series)
 
         }
     }
@@ -124,7 +129,7 @@ class MainActivity : AppCompatActivity() {
             Toast.LENGTH_SHORT
         ).show()
         val initialFile: File = File(filePath+"/"+fileName)
-        PrintWriter(initialFile).use { out -> out.println(baseFile) }
+        PrintWriter(initialFile).use { out -> out.println(baseFileContent) }
     }
 
 
@@ -152,11 +157,13 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        }
-        catch (e: FileNotFoundException) {
+        } catch (e: FileNotFoundException) {
             Toast.makeText(this, "The input file has been deleted!", Toast.LENGTH_SHORT).show()
         }
     }
+
+
+
 
 
     /**
@@ -165,25 +172,41 @@ class MainActivity : AppCompatActivity() {
      */
     fun generateArrOnClick (view: View) {
         val generated: Array<Array<Double>> = generateArr()
-        this.arrays = generated
-        showOnCanvas(view,parseForTextView(arrays))
-        button3.setOnClickListener({v -> generateSortedArr(v)})
+        val text = parseForTextView(generated)
+        //Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+
+        arrays = generated
+        showOnCanvas(view,text)
+        //button3.setOnClickListener({v -> generateSortedArr(v)})
     }
+
+
 
 
     /**
      * sort raw generated or parsed from file arrays
      */
     fun generateSortedArr (view: View) {
-        val sorted: Array<ShakerSort> = Array(arrays.size, { i -> ShakerSort(arrays[i]) })
 
-        //create Map<array size: Int, sort time: Double>() for test array to show on plot
-        fun add (sum: MutableMap<Int,Double>, el:ShakerSort) : MutableMap<Int,Double> {
-            sum.put(el.arr.size, el.time)
-            return sum
+        if (arrays.equals(nullArray)) {
+            Toast.makeText(
+                this,
+                "Please set your arrays first!",
+                Toast.LENGTH_SHORT
+            ).show()
+
         }
-        plotVals = sorted.fold(mutableMapOf(), {sum,el -> add(sum,el)})
-        showOnCanvas(view,parseForTextView(sorted))
+        else {
+            val sorted: Array<ShakerSort> = Array(arrays.size, { i -> ShakerSort(arrays[i]) })
+
+            //create Map<array size: Int, sort time: Double>() for test array to show on plot
+            fun add(sum: MutableMap<Int, Double>, el: ShakerSort): MutableMap<Int, Double> {
+                sum.put(el.arr.size, el.time)
+                return sum
+            }
+            plotVals = sorted.fold(mutableMapOf(), { sum, el -> add(sum, el) })
+            showOnCanvas(view, parseForTextView(sorted))
+        }
     }
 
     //output on textView
@@ -212,9 +235,9 @@ class MainActivity : AppCompatActivity() {
 
     //output on textView
     fun showOnCanvas(view: View, text: String) {
+        textView.visibility = TextView.VISIBLE
         textView.text = text
         val params: ViewGroup.LayoutParams = textView.getLayoutParams()
-        params.height = 300
         textView.setLayoutParams(params)
     }
 
