@@ -58,13 +58,13 @@ class MainActivity : AppCompatActivity() {
      * @return function = (x) -> k*x^2
      */
     fun interpolateOmicronSquare() : (x:Double) -> Double {
-        val valsList = if (plotVals == null) return {x:Double -> 0.0} else plotVals
+        val valsList = plotVals
         /**
          * size, time - size and sort time for the biggest test array
          * k*size^2 = time
          * k = time/(size^2)
          */
-        val maxSize: Int? = valsList?.keys!!.max()
+        val maxSize: Int? = valsList.keys.max()
         val maxTime: Double? = valsList.get(maxSize)!!.toDouble()
         val maxSizePow2: Double = if (maxSize == null) 1.0 else Math.pow(maxSize.toDouble(), 2.0)
         val maxTimeSet: Double = if (maxTime == null) 0.0 else maxTime
@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
 
             //interpolated O(n^2)
             val function = interpolateOmicronSquare()
-            val squarePlotData: Array<DataPoint> = (0..(if (maxSize == null) 1 else maxSize) step 1).map({ it -> DataPoint(it.toDouble(),function(it.toDouble()))}).toTypedArray()
+            val squarePlotData: Array<DataPoint> = (0..maxSize step 1).map({ it -> DataPoint(it.toDouble(),function(it.toDouble()))}).toTypedArray()
             val interpolatedPlot: LineGraphSeries<DataPointInterface> = LineGraphSeries(squarePlotData)
 
             graph.getViewport().setYAxisBoundsManual(true);

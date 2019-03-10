@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AMCLab2</string>
+    <string name="app_name">АМО лабораторна 2</string>
     <string name="generate_arr">Згенерувати масиви</string>
     <string name="file_input">Ввести масиви з файлу</string>
     <string name="sort">Відсортувати масиви</string>

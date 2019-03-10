@@ -2,7 +2,6 @@ package com.example.amclab2
 
 import java.math.RoundingMode
 import java.text.DecimalFormat
-import kotlin.random.Random
 
 /**
  * @input Unit
@@ -13,7 +12,7 @@ fun generateArr() : Array<Array<Double>> {
     doubleFormat.roundingMode = RoundingMode.CEILING
     return Array(10, {i ->
         Array(5+i*i*20, {_ ->
-            doubleFormat.format((Random.nextDouble()-0.5)*200).toDouble()})})
+            doubleFormat.format((Math.random()-0.5)*200).toDouble()})})
 }
 
 
