@@ -12,7 +12,7 @@ fun generateArr() : Array<Array<Double>> {
     val doubleFormat = DecimalFormat("#.####")
     doubleFormat.roundingMode = RoundingMode.CEILING
     return Array(10, {i ->
-        Array(5+i*i*5, {_ ->
+        Array(5+i*i*15, {_ ->
             doubleFormat.format((Random.nextDouble()-0.5)*200).toDouble()})})
 }
 

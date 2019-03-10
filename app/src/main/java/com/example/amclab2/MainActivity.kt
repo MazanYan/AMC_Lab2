@@ -1,17 +1,30 @@
 package com.example.amclab2
 
+import android.content.Context
+import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
+import android.util.AttributeSet
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_main.*
 import android.view.View;
 import android.widget.Toast
+import com.jjoe64.graphview.GraphView
+import com.jjoe64.graphview.series.DataPoint
+import com.jjoe64.graphview.series.DataPointInterface
+import com.jjoe64.graphview.series.LineGraphSeries
+import com.jjoe64.graphview.series.PointsGraphSeries
 import java.io.*
 import java.lang.Exception
+import android.icu.lang.UCharacter.DecompositionType.CIRCLE
+
+
 
 class MainActivity : AppCompatActivity() {
 
     var arrays: Array<Array<Double>> = Array(1,{_->Array(1, {_-> 0.0})})
+    var plotVals: MutableMap<Int, Double> = mutableMapOf()
     var filePath: String? = null
     val fileName: String = "AMC_Lab2.txt"
     val baseFile: String = """
@@ -39,16 +52,77 @@ class MainActivity : AppCompatActivity() {
 
 
 
+//    object Graph {
+//        var graph: GraphView? = null
+//        fun create(context: Context){
+//            graph = GraphView(context)
+//        }
+//    }
 
+
+
+
+    fun interpolateOmicronSquare() : (x:Double) -> Double {
+        val valsList = if (plotVals == null) return {x:Double -> 0.0} else plotVals
+        /**
+         * size, time - size and sort time for the biggest test array
+         * k*size^2 = time
+         * k = time/(size^2)
+         */
+        val maxSize: Int? = valsList?.keys!!.max()
+        val maxTime: Double? = valsList.get(maxSize)!!.toDouble()
+        val maxSizePow2: Double = if (maxSize == null) 1.0 else Math.pow(maxSize.toDouble(), 2.0)
+        val maxTimeSet: Double = if (maxTime == null) 0.0 else maxTime
+        val k: Double = maxTimeSet/maxSizePow2
+        return {x:Double -> k*x*x}
+    }
     fun plot(view: View) {
+        graph.removeAllSeries()
+        graph.visibility = GraphView.VISIBLE
+        if(plotVals == mutableMapOf<Int,Double>()) {
+            Toast.makeText(
+                this,
+                "Please sort the array first!",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+        else {
+            //tested arrays
+            val pts = plotVals
+            val max: Int? = pts.keys.max()
+            val maxSize: Int = if (max == null) 1 else max
+            val graphPoints: Array<DataPoint> = pts.map({key -> DataPoint(key.key.toDouble(),key.value)}).toTypedArray()
+            val series: PointsGraphSeries<DataPointInterface> = PointsGraphSeries(graphPoints)
 
+            //interpolated O(n^2)
+            val function = interpolateOmicronSquare()
+            val squarePlotData: Array<DataPoint> = (0..(if (maxSize == null) 1 else maxSize) step 1).map({ it -> DataPoint(it.toDouble(),function(it.toDouble()))}).toTypedArray()
+            val interpolatedPlot: LineGraphSeries<DataPointInterface> = LineGraphSeries(squarePlotData)
+
+            graph.getViewport().setYAxisBoundsManual(true);
+            graph.getViewport().setMaxY(squarePlotData.last().y+0.05)
+            graph.getViewport().setXAxisBoundsManual(true);
+            graph.getViewport().setMaxX(squarePlotData.last().x+100)
+            series.setShape(PointsGraphSeries.Shape.RECTANGLE)
+            series.setSize(5.0f)
+            series.setColor(Color.rgb(215,0,36))
+            graph.addSeries(series)
+            interpolatedPlot.setColor(Color.BLUE)
+            graph.addSeries(interpolatedPlot)
+
+        }
     }
 
 
 
 
     fun initialFileCreate() {
-        Toast.makeText(this, "The initial file didn't exist before and has been automatically created", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            this,
+            "The initial file didn't exist before and has been automatically created",
+            Toast.LENGTH_SHORT
+        ).show()
         val initialFile: File = File(filePath+"/"+fileName)
         PrintWriter(initialFile).use { out -> out.println(baseFile) }
 //        baseContext.openFileOutput(filePath+"/"+fileName, Context.MODE_PRIVATE).use {
@@ -97,6 +171,12 @@ class MainActivity : AppCompatActivity() {
 
     fun generateSortedArr (view: View) {
         val sorted: Array<ShakerSort> = Array(arrays.size, { i -> ShakerSort(arrays[i]) })
+
+        fun add (sum: MutableMap<Int,Double>, el:ShakerSort) : MutableMap<Int,Double> {
+            sum.put(el.arr.size, el.time)
+            return sum
+        }
+        plotVals = sorted.fold(mutableMapOf(), {sum,el -> add(sum,el)})
         showOnCanvas(view,parseForTextView(sorted))
     }
 
@@ -128,4 +208,7 @@ class MainActivity : AppCompatActivity() {
         params.height = 300
         textView.setLayoutParams(params)
     }
+
+
+
 }
