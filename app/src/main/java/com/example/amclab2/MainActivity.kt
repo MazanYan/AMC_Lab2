@@ -1,11 +1,8 @@
 package com.example.amclab2
 
-import android.content.Context
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
-import android.util.AttributeSet
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_main.*
 import android.view.View;
@@ -17,12 +14,17 @@ import com.jjoe64.graphview.series.LineGraphSeries
 import com.jjoe64.graphview.series.PointsGraphSeries
 import java.io.*
 import java.lang.Exception
-import android.icu.lang.UCharacter.DecompositionType.CIRCLE
 
 
-
+/**
+ * @version 1.0
+ * @author Yan Mazan, 2019
+ */
 class MainActivity : AppCompatActivity() {
 
+    /*
+     * class data
+     */
     var arrays: Array<Array<Double>> = Array(1,{_->Array(1, {_-> 0.0})})
     var plotVals: MutableMap<Int, Double> = mutableMapOf()
     var filePath: String? = null
@@ -51,17 +53,10 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-//    object Graph {
-//        var graph: GraphView? = null
-//        fun create(context: Context){
-//            graph = GraphView(context)
-//        }
-//    }
-
-
-
-
+    /**
+     * interpolate our test results into square function
+     * @return function = (x) -> k*x^2
+     */
     fun interpolateOmicronSquare() : (x:Double) -> Double {
         val valsList = if (plotVals == null) return {x:Double -> 0.0} else plotVals
         /**
@@ -76,6 +71,10 @@ class MainActivity : AppCompatActivity() {
         val k: Double = maxTimeSet/maxSizePow2
         return {x:Double -> k*x*x}
     }
+
+    /**
+     * draw plot of our tests(size, sort time) and interpolation function(size,time)
+     */
     fun plot(view: View) {
         graph.removeAllSeries()
         graph.visibility = GraphView.VISIBLE
@@ -115,8 +114,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-
+    /**
+     * create the main datafile if didn't exist befire
+     */
     fun initialFileCreate() {
         Toast.makeText(
             this,
@@ -125,10 +125,12 @@ class MainActivity : AppCompatActivity() {
         ).show()
         val initialFile: File = File(filePath+"/"+fileName)
         PrintWriter(initialFile).use { out -> out.println(baseFile) }
-//        baseContext.openFileOutput(filePath+"/"+fileName, Context.MODE_PRIVATE).use {
-//            it.write((baseFile.toByteArray()))
-//        }
     }
+
+
+    /**
+     * receive information from our datafile
+     */
     fun generateFromFile(view: View) {
         try {
             val sdPath = File(filePath + "/" + fileName)
@@ -157,8 +159,10 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-
+    /**
+     * generate 10 random arraus with different size
+     * @use GenerateArr::generateArr()
+     */
     fun generateArrOnClick (view: View) {
         val generated: Array<Array<Double>> = generateArr()
         this.arrays = generated
@@ -167,11 +171,13 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-
+    /**
+     * sort raw generated or parsed from file arrays
+     */
     fun generateSortedArr (view: View) {
         val sorted: Array<ShakerSort> = Array(arrays.size, { i -> ShakerSort(arrays[i]) })
 
+        //create Map<array size: Int, sort time: Double>() for test array to show on plot
         fun add (sum: MutableMap<Int,Double>, el:ShakerSort) : MutableMap<Int,Double> {
             sum.put(el.arr.size, el.time)
             return sum
@@ -180,6 +186,7 @@ class MainActivity : AppCompatActivity() {
         showOnCanvas(view,parseForTextView(sorted))
     }
 
+    //output on textView
     fun parseForTextView(array: Array<Array<Double>>) : String {
         var res = ""
         for (i in array) {
@@ -191,6 +198,7 @@ class MainActivity : AppCompatActivity() {
         return res
     }
 
+    //output on textView
     fun parseForTextView(sortedArr: Array<ShakerSort>) : String {
         var res = ""
         for (i in sortedArr) {
@@ -202,6 +210,7 @@ class MainActivity : AppCompatActivity() {
         return res
     }
 
+    //output on textView
     fun showOnCanvas(view: View, text: String) {
         textView.text = text
         val params: ViewGroup.LayoutParams = textView.getLayoutParams()
